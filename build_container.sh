@@ -4,10 +4,15 @@
 relativepath="./" # Define relative path to go from this script to the root level of the tool
 if [[ ! -v toolpath ]]; then scriptpath=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ); toolpath=$(realpath --canonicalize-missing ${scriptpath}/${relativepath}); fi
 
-# Load Configuration
+# Load Library of Functions
 libpath=$(readlink --canonicalize-missing "${toolpath}/includes")
 source ${libpath}/functions.sh
 
+# Load Configuration
+if [[ -f "${toolpath}/config.sh" ]]
+then
+   source ${toolpath}/config.sh
+fi
 
 # Optional argument
 engine=${1-"podman"}
@@ -58,11 +63,6 @@ bases+=("NGINX")
 #bases+=("Alpine")
 #bases+=("Debian")
 #bases+=("Test")
-
-# Mandatory Tag
-#tag=$(cat ./tag.txt)
-#tag=$(date +%Y%m%d)
-tag="v5.0.3"
 
 # Pass Tag as Build Argument
 opts+=("--build-arg")

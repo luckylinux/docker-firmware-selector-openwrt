@@ -26,6 +26,13 @@ then
 
    # Retrieve what Version the "latest" tag Corresponds to
    FIRMWARE_SELECTOR_OPENWRT_ORG_VERSION=$(curl -H "Accept: application/vnd.github.v3+json" -sS  "https://api.github.com/repos/${FIRMWARE_SELECTOR_OPENWRT_ORG_REPOSITORY}/tags" | jq -r '.[0].name')
+elif [[ "${FIRMWARE_SELECTOR_OPENWRT_ORG_TAG}" == "main" ]]
+then
+   # Define Base URL
+   FIRMWARE_SELECTOR_OPENWRT_ORG_BASE_URL="https://github.com/${FIRMWARE_SELECTOR_OPENWRT_ORG_REPOSITORY}/archive/refs/heads"
+
+   # Version is the same as the Tag
+   FIRMWARE_SELECTOR_OPENWRT_ORG_VERSION="${FIRMWARE_SELECTOR_OPENWRT_ORG_TAG}"
 else
    # Define Base URL
    FIRMWARE_SELECTOR_OPENWRT_ORG_BASE_URL="https://github.com/${FIRMWARE_SELECTOR_OPENWRT_ORG_REPOSITORY}/archive/refs/tags"
@@ -83,3 +90,23 @@ fi
 
 # Extract Files (only www Subfolder) from Cache Folder to Destination Folder
 tar xvf "${FIRMWARE_SELECTOR_OPENWRT_ORG_CACHE_PATH}/${FIRMWARE_SELECTOR_OPENWRT_ORG_VERSION}/${FIRMWARE_SELECTOR_OPENWRT_ORG_PACKAGE_FILENAME}" --strip-components 2 -C "${FIRMWARE_SELECTOR_OPENWRT_ORG_PATH}" "firmware-selector-openwrt-org-${FIRMWARE_SELECTOR_OPENWRT_ORG_VERSION}/www"
+
+# Install git temporarily
+apt-get update
+apt-get install -y git
+
+# Get Commit ID
+commit_id=$(gunzip < "${FIRMWARE_SELECTOR_OPENWRT_ORG_CACHE_PATH}/${FIRMWARE_SELECTOR_OPENWRT_ORG_VERSION}/${FIRMWARE_SELECTOR_OPENWRT_ORG_PACKAGE_FILENAME}" | git get-tar-commit-id)
+
+# This is unfortunately not possible since the Information is lost. We would need to clone the Repository using git instead of downloading the Archive, in order to do this
+# tag_description=(gunzip < "${FIRMWARE_SELECTOR_OPENWRT_ORG_CACHE_PATH}/${FIRMWARE_SELECTOR_OPENWRT_ORG_VERSION}/${FIRMWARE_SELECTOR_OPENWRT_ORG_PACKAGE_FILENAME}" | git --describe-tags)
+
+# Fix Version String
+cd "${FIRMWARE_SELECTOR_OPENWRT_ORG_PATH}"
+sed -i "s|%GIT_VERSION%|${FIRMWARE_SELECTOR_OPENWRT_ORG_TAG}-${commit_id}|" index.js
+
+# Remove git
+apt-get remove -y git
+apt-get autoremove -y
+apt-get autoclean -y
+apt-get clean -y

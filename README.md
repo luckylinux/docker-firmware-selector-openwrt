@@ -71,6 +71,9 @@ Network=container:openwrt-firmware-selector-caddy
 #Network=traefik
 
 Volume=/home/podman/containers/data/openwrt-firmware-selector/server/misc:/usr/share/nginx/html/misc:ro,Z
+Volume=/home/podman/containers/data/openwrt-firmware-selector/server/config.json:/usr/share/nginx/html/config.json:ro,Z
+
+# Logs
 Volume=/home/podman/containers/log/openwrt-firmware-selector/server:/var/log/nginx:rw,Z
 
 # If you want to pass any additional Configuration to NGINX
@@ -94,6 +97,9 @@ services:
     container_name: openwrt-firmware-selector-server
     volumes:
       - /home/podman/containers/data/openwrt-firmware-selector/server/misc:/usr/share/nginx/html/misc:ro
+      - /home/podman/containers/data/openwrt-firmware-selector/server/config.json:/usr/share/nginx/html/config.json:ro
+
+      # Logs
       - /home/podman/containers/log/openwrt-firmware-selector/server:/var/log/nginx
 
       # If you want to pass any additional Configuration to NGINX

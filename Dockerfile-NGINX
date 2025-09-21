@@ -19,6 +19,6 @@ RUN mkdir -p /var/lib/installer
 # Copy Firmware Selector Installer Script
 COPY setup-firmware-selector.sh /opt/setup-firmware-selector.sh
 
-# RUN Skopeo Installer Script
+# RUN OpenWRT Firmware Selector Installer Script
 RUN --mount=type=cache,mode=0777,target=/var/lib/installer/firmware-selector-openwrt-org,sharing=locked \
     bash -c "/opt/setup-firmware-selector.sh ${FIRMWARE_SELECTOR_OPENWRT_ORG_TAG}"

@@ -14,12 +14,16 @@ ln -s /path/to/container-build-tools includes
 ```
 
 # Build
+Copy the default Configuration, editing the Options to your Liking:
+```
+cp config.sh.example config.sh
+nano config.sh
+```
+
 The Container can simply be built using:
 ```
 ./build.sh
 ```
-
-Edit the Options to your liking.
 
 # Run
 The NGINX Container listens on Port 8080.

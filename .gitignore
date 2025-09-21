@@ -1,0 +1,14 @@
+# Ignore .env file
+.env
+
+# Ignore Configuration File
+config.sh
+
+# Ignore cache used for building containers
+cache
+
+# Ignore "misc" Folder which could contain Custom Information
+misc
+
+# Ignore includes
+includes

@@ -1,0 +1,42 @@
+FROM alpine:latest
+
+ARG TARGETPLATFORM
+#ARG BUILDPLATFORM
+
+# App Path
+ARG APP_PATH="/opt/app"
+
+# Create Directory for App
+RUN mkdir -p "/opt"
+RUN mkdir -p "${APP_PATH}"
+
+# Change Directory
+WORKDIR "${APP_PATH}"
+
+# Copy Sources
+COPY app/ "${APP_PATH}"
+
+# Update Sources
+# Install other Dependencies / recommended Packages
+# Shadow is needed in order to use "chsh"
+RUN --mount=type=cache,mode=0777,target=/var/cache/apk,sharing=locked \
+    --mount=type=cache,mode=0777,target=/var/lib/apk,sharing=locked \ 
+    apk update && \ 
+    apk add ca-certificates bash curl wget shadow shadow-subids shadow-login e2fsprogs-extra coreutils jq
+#    apk add --no-cache ca-certificates bash curl wget shadow shadow-subids shadow-login e2fsprogs-extra
+
+# Change Shell
+RUN chsh -s /bin/bash root
+RUN export SHELL="/bin/bash"
+RUN ln -sf /bin/bash /bin/sh
+
+# set ENV to execute startup scripts
+ENV ENV /etc/profile
+
+# Set PATH Variable
+ENV PATH="${APP_PATH}:$PATH"
+
+# Copy and Execute Entrypoint Script
+COPY docker-entrypoint.sh /opt/
+RUN chmod +x /opt/docker-entrypoint.sh
+ENTRYPOINT ["/opt/docker-entrypoint.sh"]

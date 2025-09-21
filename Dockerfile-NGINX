@@ -1,0 +1,24 @@
+FROM nginx:latest
+
+ARG TARGETPLATFORM
+#ARG BUILDPLATFORM
+
+# firmware-selector-openwrt-org Tag
+ARG FIRMWARE_SELECTOR_OPENWRT_ORG_TAG="v5.0.3"
+#ARG FIRMWARE_SELECTOR_OPENWRT_ORG_TAG="latest"
+
+# Override default NGINX Configuration
+COPY nginx/ /etc/nginx
+
+# Create folder for Caching Packages
+RUN mkdir -p /var/lib/installer
+
+# Debug
+#RUN echo "Pass Version ${FIRMWARE_SELECTOR_OPENWRT_ORG_TAG} to Script"
+
+# Copy Firmware Selector Installer Script
+COPY setup-firmware-selector.sh /opt/setup-firmware-selector.sh
+
+# RUN Skopeo Installer Script
+RUN --mount=type=cache,mode=0777,target=/var/lib/installer/firmware-selector-openwrt-org,sharing=locked \
+    bash -c "/opt/setup-firmware-selector.sh ${FIRMWARE_SELECTOR_OPENWRT_ORG_TAG}"

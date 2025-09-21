@@ -1,0 +1,56 @@
+FROM debian:testing
+
+ARG TARGETPLATFORM
+#ARG BUILDPLATFORM
+
+# App Path
+ARG APP_PATH="/opt/app"
+
+# Create Directory for App
+RUN mkdir -p "/opt"
+RUN mkdir -p "${APP_PATH}"
+
+# Change Directory
+WORKDIR "${APP_PATH}"
+
+# Copy Sources
+COPY app/ "${APP_PATH}"
+
+# Add APT Configuration for more recent (testing) Packages
+# Change Directory
+WORKDIR "/etc"
+
+# Copy sources.list.d and preferences.d Files
+# ONLY NEEDED WHEN USING APT PINNING with Debian Stable as a Base
+#ADD etc /etc/
+
+# Change Workdir Back to App Folder
+WORKDIR "${APP_PATH}"
+
+# Use Cache (Keep downloaded Files)
+# They are stored in the Cache directory, NOT in the final Container Image
+RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
+
+# Update Sources
+# Install other Dependencies / recommended Packages
+RUN --mount=type=cache,mode=0777,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,mode=0777,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
+    apt-get install --no-install-recommends -y ca-certificates bash curl wget jq && \
+    echo "Finished installing base Packages"
+
+# Change Shell
+RUN chsh -s /bin/bash root
+RUN export SHELL="/bin/bash"
+RUN ln -sf /bin/bash /bin/sh
+
+# set ENV to execute startup scripts
+ENV ENV /etc/profile
+
+# Set PATH Variable
+ENV PATH="${APP_PATH}:$PATH"
+
+# Copy and Execute Entrypoint Script
+COPY docker-entrypoint.sh /opt/
+RUN chmod +x /opt/docker-entrypoint.sh
+ENTRYPOINT ["/opt/docker-entrypoint.sh"]
